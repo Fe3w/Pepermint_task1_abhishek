@@ -38,9 +38,9 @@ The vision node subscribes to the raw camera feed (`/image_raw`) and performs th
 | `sat_low` / `sat_high` | 30 / 255 | Saturation bounds. |
 | `val_low` / `val_high` | 30 / 255 | Value (brightness) bounds. |
 | `min_contour_area` | 30 | Minimum contour area (pixels) to ignore noise. |
-<img width="902" height="329" alt="download (1)" src="https://github.com/user-attachments/assets/24d6a4ce-aeae-4daf-ae1e-3eed467a77d6" />
-<img width="1198" height="578" alt="download" src="https://github.com/user-attachments/assets/7e20a244-2329-43f3-a2bf-8227b55e2763" />
 
+<img width="1198" height="578" alt="download" src="https://github.com/user-attachments/assets/7e20a244-2329-43f3-a2bf-8227b55e2763" />
+<img width="902" height="329" alt="download (1)" src="https://github.com/user-attachments/assets/24d6a4ce-aeae-4daf-ae1e-3eed467a77d6" />
 
 ---
 
