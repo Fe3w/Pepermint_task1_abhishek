@@ -1,4 +1,10 @@
-# Green Sphere Tracker – ROS 2 Package
+# PEPPERMINT TASK 1 
+
+https://github.com/user-attachments/assets/44915f84-ef7a-43d2-bdf6-bf0db30526ea
+
+
+https://github.com/user-attachments/assets/80eed461-08ae-4c8d-af65-063fb4bef706
+
 
 This ROS 2 package enables a **TurtleBot3 (Waffle)** in a **Gazebo** simulation to autonomously detect and track a **green spherical target** using **computer vision (OpenCV)** and a **proportional motion controller**. The system is divided into two modular nodes:
 
@@ -34,6 +40,9 @@ The node can also display a real‑time debug window (optional) that draws the d
 | `val_low` / `val_high` | 30 / 255 | Value (brightness) bounds. |
 | `min_contour_area` | 30 | Minimum contour area (pixels) to ignore noise. |
 | `show_debug_window` | True | Enable/disable the OpenCV debug display. |
+<img width="902" height="329" alt="download (1)" src="https://github.com/user-attachments/assets/24d6a4ce-aeae-4daf-ae1e-3eed467a77d6" />
+<img width="1198" height="578" alt="download" src="https://github.com/user-attachments/assets/7e20a244-2329-43f3-a2bf-8227b55e2763" />
+
 
 ---
 
@@ -92,7 +101,6 @@ The controller node subscribes to **`/error`** (from the vision node) and **`/sc
 | Source | How it works | Pros / Cons |
 |--------|--------------|--------------|
 | **Contour area (OpenCV)** | The green sphere’s bounding‑box area increases as the robot gets closer. A simple distance‑proportional threshold could be used. | ✔ Lightweight, no extra sensor.<br>✘ Highly heuristic; sensitive to lighting, partial occlusion, and requires prior knowledge of target size. |
-| **RGB‑D (depth) camera** | If the robot carried an RGB‑D sensor (e.g., Intel RealSense), the depth image would give a **direct metric distance** for every green pixel. | ✔ Robust distance measurement, independent of LiDAR.<br>✘ Requires additional hardware and processing. |
 
 ---
 
@@ -105,26 +113,30 @@ The controller node subscribes to **`/error`** (from the vision node) and **`/sc
 - **TurtleBot3** ROS 2 packages (`turtlebot3_gazebo`)
 - Python libraries: `opencv-python`, `cv_bridge`, `numpy`
 
-### Workspace Compilation
-
+### Workspace setup & run 
 ```bash
-# Source ROS 2
+# Source ROS Humble environment
 source /opt/ros/humble/setup.bash
 
-# Create workspace and clone
+# Create workspace
 mkdir -p ~/green_follower_ws/src
 cd ~/green_follower_ws/src
-git clone <your-repo-url> green_sphere_navigator
 
-# Install dependencies
+# Clone the repository
+git clone https://github.com/Fe3w/Pepermint_task1_abhishek.git green_sphere_navigator
+
+# Move back to workspace root and install dependencies
 cd ~/green_follower_ws
 sudo apt update
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
 
-# Build
+# Build and source
 colcon build --symlink-install
 source install/setup.bash
 
-# Set TurtleBot3 model (Waffle has both camera and LiDAR)
+# Set TurtleBot3 model (must be WAFFLE)
 export TURTLEBOT3_MODEL=waffle
+
+# Launch the simulation + nodes
+ros2 launch green_sphere_navigator follow_sphere.launch.py
