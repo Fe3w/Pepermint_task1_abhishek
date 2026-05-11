@@ -42,7 +42,7 @@ The node can also display a real‑time debug window (optional) that draws the d
 The controller node subscribes to **`/error`** (from the vision node) and **`/scan`** (LiDAR), and publishes **`/cmd_vel`** (`Twist`) messages. Its logic is:
 
 - **Target Search Mode**  
-  If the received error equals `9999.0` (target not visible), the robot **rotates in place** at a configurable angular speed (`search_rot_speed`, default 0.5 rad/s). This allows the robot to scan the environment until the green sphere re‑enters the camera field of view.
+  If the received error equals `100000.0` (target not visible), the robot **rotates in place** at a configurable angular speed (`search_rot_speed`, default 0.5 rad/s). This allows the robot to scan the environment until the green sphere re‑enters the camera field of view.
 
 - **Visual Servoing (P‑controller)**  
   When a valid error is received, the angular velocity is calculated as:  
