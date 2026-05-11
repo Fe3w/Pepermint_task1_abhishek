@@ -48,7 +48,7 @@ class ControllerNode(Node):
             self.cmd_pub.publish(cmd)
             return
 
-        if self.current_error == 9999.0:
+        if self.current_error == 100000.0:
             cmd.angular.z = search_rot
         else:
             error = self.current_error
