@@ -99,6 +99,7 @@ The controller node subscribes to **`/error`** (from the vision node) and **`/sc
 | Source | How it works | Pros / Cons |
 |--------|--------------|--------------|
 | **Contour area (OpenCV)** | The green sphere’s bounding‑box area increases as the robot gets closer. A simple distance‑proportional threshold could be used. | ✔ Lightweight, no extra sensor.<br>✘ Highly heuristic; sensitive to lighting, partial occlusion, and requires prior knowledge of target size. |
+| **RGB‑D (depth) camera** | If the robot carried an RGB‑D sensor (e.g., Intel RealSense), the depth image would give a **direct metric distance** for every green pixel. | ✔ Robust distance measurement, independent of LiDAR.<br>✘ Requires additional hardware and processing. |
 
 ---
 
