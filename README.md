@@ -22,6 +22,24 @@ List the hardware and software tools used to run this project.
 ## 🚀 Setup and Installation
 Provide step-by-step instructions on how to get the project running locally.
 
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/yourusername/your-repo-name.git](https://github.com/yourusername/your-repo-name.git)
+# Source ROS Humble environment
+source /opt/ros/humble/setup.bash
+
+# Create workspace
+mkdir -p ~/green_follower_ws/src
+cd ~/green_follower_ws/src
+
+# Clone the repository
+git clone https://github.com/Fe3w/Pepermint_task1_abhishek.git green_sphere_navigator
+
+# Move back to workspace root and install dependencies
+cd ~/green_follower_ws
+sudo apt update
+rosdep update
+rosdep install --from-paths src --ignore-src -r -y
+
+# Build and launch
+colcon build --symlink-install
+source install/setup.bash
+export TURTLEBOT3_MODEL=waffle
+ros2 launch green_sphere_navigator follow_sphere.launch.py
