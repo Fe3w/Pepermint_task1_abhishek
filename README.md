@@ -30,6 +30,7 @@ The vision node subscribes to the raw camera feed (`/image_raw`) and performs th
 | **Loss of target handling** | If no valid contour is found, the node publishes a **sentinel value** `100000.0`. |
 
 The node can also display a real‑time debug window (optional) that draws the detected centroid, area, and the mask.
+disabled by defalut.
 
 #### Key Parameters (Configurable via ROS 2 parameters)
 
