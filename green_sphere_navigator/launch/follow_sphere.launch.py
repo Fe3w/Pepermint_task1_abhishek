@@ -25,7 +25,7 @@ def generate_launch_description():
         arguments=[
             '-file', sphere_path,
             '-entity', 'green_sphere',
-            '-x', '1.5', '-y', '0.0', '-z', '0.5'
+            '-x', '1.5', '-y', '0.0', '-z', '0.15'
         ],
         output='screen'
     )
