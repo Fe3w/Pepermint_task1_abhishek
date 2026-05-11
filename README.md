@@ -20,8 +20,20 @@ List the hardware and software tools used to run this project.
 * **Software:** (e.g., ROS 2, C++, Python, MQTT)
 
 ## 🚀 Setup and Installation
-Provide step-by-step instructions on how to get the project running locally.
+### Setup and Installation
 
+#### Prerequisites
+- Ubuntu 22.04
+- ROS 2 (Humble)
+- Gazebo Classic
+- TurtleBot3 ROS2 Setup
+- OpenCV and cv_bridge
+
+#### 1. Workspace Setup
+
+Clone this package into your ROS 2 workspace `src` directory or just copy‑paste the commands in your terminal:
+
+```bash
 # Source ROS Humble environment
 source /opt/ros/humble/setup.bash
 
@@ -38,8 +50,12 @@ sudo apt update
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
 
-# Build and launch
+# Build and source
 colcon build --symlink-install
 source install/setup.bash
+
+# Set TurtleBot3 model (must be WAFFLE)
 export TURTLEBOT3_MODEL=waffle
+
+# Launch the simulation + nodes
 ros2 launch green_sphere_navigator follow_sphere.launch.py
