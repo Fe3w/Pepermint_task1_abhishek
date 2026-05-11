@@ -6,9 +6,23 @@
 
 ---
 
-## 📖 Overview
-Briefly describe what this project is, what it does, and why you built it. Keep it to a few sentences explaining the main objective.
+## Overview
+This repository contains a ROS 2 Humble package designed to autonomously navigate a TurtleBot3 towards a green sphere in a Gazebo Classic simulated environment.
 
+The system uses two nodes based on computer vision (OpenCV) and a proportional motion controller, ensuring modular and responsive robot behaviour.
+
+**Key Features**
+- Detects a green sphere using HSV colour thresholding
+- Computes the sphere's horizontal centroid offset
+- Uses a P‑controller to rotate and align the robot
+- Moves forward when aligned, stopping at a safe LiDAR distance
+- Recovers automatically if the sphere leaves the camera’s field of view
+
+---
+
+## System Architecture & Approach
+
+**Node Diagram**
 ## ✨ Features
 * Highlight the core functionality here.
 * Example: Real-time sensor data transmission.
