@@ -6,6 +6,7 @@ from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
+    # 1. TurtleBot3 empty world (Gazebo Classic)
     turtlebot3_gazebo_dir = get_package_share_directory('turtlebot3_gazebo')
     gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -13,20 +14,23 @@ def generate_launch_description():
         )
     )
 
+    # 2. Path to the green sphere model
     pkg_share = get_package_share_directory('green_sphere_navigator')
     sphere_path = os.path.join(pkg_share, 'models', 'sphere.sdf')
 
+    # 3. Spawn sphere using Gazebo Classic spawner
     spawn_sphere = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
         arguments=[
             '-file', sphere_path,
             '-entity', 'green_sphere',
-            '-x', '1.5', '-y', '0.0', '-z', '.15'
+            '-x', '1.5', '-y', '0.0', '-z', '0.5'
         ],
         output='screen'
     )
 
+    # 4. Vision node – publishes /error
     vision_node = Node(
         package='green_sphere_navigator',
         executable='vision_node',
@@ -40,10 +44,11 @@ def generate_launch_description():
             'sat_low': 30, 'sat_high': 255,
             'val_low': 30, 'val_high': 255,
             'min_contour_area': 30,
-            'show_debug_window': True
+            'show_debug_window': False
         }]
     )
 
+    # 5. Controller node – publishes /cmd_vel
     controller_node = Node(
         package='green_sphere_navigator',
         executable='controller_node',
@@ -59,7 +64,19 @@ def generate_launch_description():
         }]
     )
 
+    # 6. Rqt_image_view – opens an RGB camera feed window
+    rqt_image_view_node = Node(
+        package='rqt_image_view',
+        executable='rqt_image_view',
+        name='rqt_image_view',
+        arguments=['/camera/image_raw'],
+        output='screen'
+    )
+
     return LaunchDescription([
         gazebo_launch,
-        TimerAction(period=5.0, actions=[spawn_sphere, vision_node, controller_node])
+        TimerAction(
+            period=5.0,
+            actions=[spawn_sphere, vision_node, controller_node, rqt_image_view_node]
+        )
     ])
