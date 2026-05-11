@@ -112,7 +112,7 @@ The controller node subscribes to **`/error`** (from the vision node) and **`/sc
 - **TurtleBot3** ROS 2 packages (`turtlebot3_gazebo`)
 - Python libraries: `opencv-python`, `cv_bridge`, `numpy`
 
-### Workspace setup & run 
+### Workspace setup & Run 
 ```bash
 # Source ROS Humble environment
 source /opt/ros/humble/setup.bash
