@@ -4,7 +4,7 @@
   <name>green_sphere_navigator</name>
   <version>0.1.0</version>
   <description>Green sphere follower using OpenCV and TurtleBot3</description>
-  <maintainer email="you@example.com">Your Name</maintainer>
+  <maintainer email="abhishelp135531@gmail.com">abhishek</maintainer>
   <license>Apache-2.0</license>
 
   <depend>rclpy</depend>
