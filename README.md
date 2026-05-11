@@ -76,18 +76,18 @@ The TurtleBot3’s 2D LiDAR (`/scan`) is used to measure the distance to the nea
 In this implementation, the 2D LiDAR was chosen because it is already integrated into the TurtleBot3 and gives consistent results.
 
 ---
+### Setup and Installation
 
-## Setup and Installation
-
-### Prerequisites
+#### Prerequisites
 - Ubuntu 22.04
 - ROS 2 (Humble)
 - Gazebo Classic
 - TurtleBot3 ROS2 Setup
-- OpenCV and `cv_bridge`
+- OpenCV and cv_bridge
 
-### 1. Workspace Setup
-Clone this repository into your ROS 2 workspace source directory or run the commands below:
+#### 1. Workspace Setup
+
+Clone this package into your ROS 2 workspace `src` directory or just copy‑paste the commands in your terminal:
 
 ```bash
 # Source ROS Humble environment
@@ -100,12 +100,18 @@ cd ~/green_follower_ws/src
 # Clone the repository
 git clone https://github.com/Fe3w/Pepermint_task1_abhishek.git green_sphere_navigator
 
-# Install dependencies
+# Move back to workspace root and install dependencies
 cd ~/green_follower_ws
 sudo apt update
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
 
-# Build the workspace
+# Build and source
 colcon build --symlink-install
 source install/setup.bash
+
+# Set TurtleBot3 model (must be WAFFLE)
+export TURTLEBOT3_MODEL=waffle
+
+# Launch the simulation + nodes
+ros2 launch green_sphere_navigator follow_sphere.launch.py
