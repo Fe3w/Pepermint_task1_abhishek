@@ -6,112 +6,85 @@
 
 ---
 
-## Overview
-This repository contains a ROS 2 Humble package designed to autonomously navigate a TurtleBot3 towards a green sphere in a Gazebo Classic simulated environment.
+## 📌 Overview
 
-The system uses two nodes based on computer vision (OpenCV) and a proportional motion controller, ensuring modular and responsive robot behaviour.
+This repository contains a ROS 2 package designed to fulfill the requirements of autonomous target-tracking using a TurtleBot3 in a Gazebo simulated environment. The system utilizes computer vision (OpenCV) to detect a specific green spherical target and a proportional motion controller to navigate the robot towards it. 
 
-**Key Features**
-- Detects a green sphere using HSV colour thresholding
-- Computes the sphere's horizontal centroid offset
-- Uses a P‑controller to rotate and align the robot
-- Moves forward when aligned, stopping at a safe LiDAR distance
-- Recovers automatically if the sphere leaves the camera’s field of view
+The architecture is divided into two highly modular nodes: a **Vision Node** for image processing and state estimation, and a **Controller Node** for executing kinematic commands based on sensory feedback.
 
 ---
 
+## 🏗️ System Architecture
 
-The **vision_node** processes the raw camera image, finds the largest green contour and publishes the horizontal pixel error to `/error`. The **controller_node** uses a proportional gain to steer the robot, and the LiDAR data to stop when the sphere is close.
+### 1. Vision Perception (`vision_node.py`)
+This node is responsible for processing raw camera feeds to isolate the target and compute the necessary trajectory corrections.
 
----
+* **Image Acquisition:** Subscribes to the `/camera/image_raw` topic.
+* **Color Space Conversion & Thresholding:** Converts incoming BGR images to the HSV color space to mitigate lighting variances in the Gazebo environment. A dynamic mask isolates the green hue.
+* **Morphological Operations:** Applies an opening morphological transformation to eliminate high-frequency noise and false positives.
+* **Centroid & Error Computation:** Extracts the largest valid contour and calculates its spatial moments to find the center of mass $(c_x, c_y)$. It then computes the horizontal pixel error relative to the image's center and publishes this value to the `/error` topic.
+* **Loss of Target Handling:** If no valid contour is detected, the node publishes a predefined sentinel value (`9999.0`) to signal a tracking failure to the controller.
 
-### 1. Vision Node (`vision_node.py`)
-This node acts as the robot's “eyes”. It subscribes to `/camera/image_raw` and processes the BGR feed to locate the green sphere.
+### 2. Kinematic Controller (`controller_node.py`)
+This node processes the error signals and environmental data to calculate and publish velocity commands.
 
-- **Colour Space Conversion** – Converts BGR to HSV to robustly handle Gazebo’s lighting.
-- **Thresholding & Morphology** – Applies a green‑hue mask and morphological opening to remove noise.
-- **Centroid Calculation** – Finds the largest contour and uses `cv2.moments` to compute the centre of mass `(cx, cy)`.
-- **Error Calculation** – Publishes the horizontal pixel error `(cx - image_center_x)` to `/error`.  
-  *Positive error = object to the right of centre; negative = to the left.*
-- **Out‑of‑Frame Recovery** – If no valid green contour is found, a sentinel value of `9999.0` is published to signal the controller to enter search mode.
-
-HSV thresholds are exposed as ROS 2 parameters and can be tuned at runtime (default: `hue_low=30, hue_high=90, sat_low=30, sat_high=255, val_low=30, val_high=255, min_contour_area=30`).
-
----
-
-### 2. Controller Node (`controller_node.py`)
-This node acts as the “brain”. It subscribes to `/error` and `/scan`.
-
-- **Visual Servoing (P‑Controller)** – Multiplies the horizontal error by a proportional gain (`Kp=0.003`) to produce an angular velocity command.  
-  The sign is inverted (`ang = -Kp * error`) so that positive error (object to the right) causes a right turn.
-- **Forward Motion** – When `abs(error) < error_tolerance` (default 40 pixels), the robot moves forward at `linear_speed` (0.12 m/s) while continuously correcting heading.
-- **LiDAR Stopping** – Reads the front 20° cone of the laser scan. If the minimum valid distance ≤ `stop_distance` (0.35 m), all velocities are set to zero and the robot stops.
-- **Search State** – When the sentinel `9999.0` is received, the robot rotates in place at `search_rot_speed` (0.3 rad/s) until the target is reacquired.
-
-All key values are ROS 2 parameters and can be adjusted on the fly.
+* **Visual Servoing (P-Controller):** Subscribes to the `/error` topic. The angular velocity is governed by a proportional controller ($\omega_z = -K_p \times \text{error}$), aligning the robot with the target. 
+* **Forward Kinematics:** When the absolute horizontal error falls below a defined tolerance threshold, the robot initiates a constant linear velocity toward the target while maintaining heading corrections.
+* **Collision Avoidance:** Subscribes to the `/scan` topic. It monitors the LiDAR data within a frontal 20° cone. If the minimum distance reading breaches the safety threshold, all velocity commands are nullified.
 
 ---
 
-### How would you account for the object going out of frame? How would you recover?
-**Sentinel‑based search state**  
-If the green sphere leaves the camera’s field of view, the vision node immediately publishes a special error value of `9999.0`. Upon receiving this, the controller node interprets it as “target lost” and automatically enters a **search mode**:
-- It stops any forward linear motion.
-- It commands a steady angular velocity (default `0.3 rad/s`), causing the robot to rotate in place and scan the environment.
-- The moment the sphere reappears and a valid (non‑9999) error is published, the P‑controller seamlessly resumes tracking.
+## 📝 Formal Task Responses
 
-This approach avoids complex state machines while providing robust recovery.
+**Q: How would you account for the object going out of frame? How would you recover?**
 
----
+**A:** The system employs a state-driven recovery mechanism utilizing a sentinel flag. If the target object leaves the camera's field of view, the `vision_node` instantly fails to find a valid contour meeting the minimum area requirements. It immediately publishes a sentinel error value of `9999.0`. 
 
-### How would you figure out that the robot is close to the obstacle and stop? Is there any other data you can use?
-**LiDAR‑based distance measurement**  
-The TurtleBot3’s 2D LiDAR (`/scan`) is used to measure the distance to the nearest obstacle in a narrow front cone (0°±10°). When this distance drops below **0.35 m**, the controller overrides all movement commands and stops the robot completely. This method is:
-- **Reliable** – independent of lighting, colour, or sphere size.
-- **Precise** – gives direct metric distance.
+Upon receiving this specific value, the `controller_node` transitions from "tracking mode" to "search mode." It halts all linear progression ($v_x = 0$) and commands a constant angular velocity (defaulting to $0.5$ rad/s). This forces the robot to rotate in place, systematically scanning its environment until the green sphere re-enters the frame, at which point standard P-controller tracking seamlessly resumes.
 
-**Other options considered**  
-- **Contour area from the camera** – larger contour = closer object. However, area depends on camera resolution, lighting, and the actual object size, making it less robust.
-- **Depth camera** – If available, a depth camera could provide pixel‑wise distance. This would be the most accurate vision‑based method, but requires additional hardware and calibration.
+**Q: How would you figure out that the robot is close to the obstacle and stop? Is there any other data you can use?**
 
-In this implementation, the 2D LiDAR was chosen because it is already integrated into the TurtleBot3 and gives consistent results.
+**A:** The primary method for obstacle proximity detection in this package relies on the robot's onboard 2D LiDAR. The `controller_node` processes the `/scan` data, isolating an array of laser ranges from the front of the robot (0° ± 10°). If the minimum valid distance within this cone drops below the configurable `stop_distance` parameter (set to 0.5 meters), the node overrides the tracking logic and commands a zero-velocity twist message, safely stopping the robot.
+
+**Alternative Data Sources Considered:**
+* **Contour Area Calculation:** The area of the target's bounding box or contour (calculated via OpenCV) increases inversely with distance. While computationally inexpensive, this is a highly heuristic approach vulnerable to lighting changes, partial occlusions, and requires prior knowledge of the object's true dimensions.
+* **RGB-D (Depth) Camera:** If equipped, a depth sensor (like an Intel RealSense) provides direct metric distances for every pixel. This would allow the system to map the exact distance of the contour's centroid, offering a highly robust vision-only stopping criteria without relying on a separate 2D LiDAR plane.
 
 ---
-### Setup and Installation
 
-#### Prerequisites
-- Ubuntu 22.04
-- ROS 2 (Humble)
-- Gazebo Classic
-- TurtleBot3 ROS2 Setup
-- OpenCV and cv_bridge
+## ⚙️ Setup and Installation
 
-#### 1. Workspace Setup
+### Prerequisites
+* Ubuntu 22.04
+* ROS 2 (Humble)
+* Gazebo Classic
+* TurtleBot3 ROS 2 Packages
+* `cv_bridge` and `OpenCV` Python libraries
 
-Clone this package into your ROS 2 workspace `src` directory or just copy‑paste the commands in your terminal:
+### Workspace Compilation
+
+Execute the following commands to clone and build the package within a ROS 2 workspace:
 
 ```bash
 # Source ROS Humble environment
 source /opt/ros/humble/setup.bash
 
-# Create workspace
+# Create and navigate to the workspace
 mkdir -p ~/green_follower_ws/src
 cd ~/green_follower_ws/src
 
 # Clone the repository
-git clone https://github.com/Fe3w/Pepermint_task1_abhishek.git green_sphere_navigator
+git clone [https://github.com/Fe3w/Pepermint_task1_abhishek.git](https://github.com/Fe3w/Pepermint_task1_abhishek.git) green_sphere_navigator
 
-# Move back to workspace root and install dependencies
+# Move to workspace root and install dependencies
 cd ~/green_follower_ws
 sudo apt update
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
 
-# Build and source
+# Build the package
 colcon build --symlink-install
 source install/setup.bash
 
-# Set TurtleBot3 model (must be WAFFLE)
+# Set TurtleBot3 model variable (Waffle model provides the necessary camera/LiDAR)
 export TURTLEBOT3_MODEL=waffle
-
-# Launch the simulation + nodes
-ros2 launch green_sphere_navigator follow_sphere.launch.py
