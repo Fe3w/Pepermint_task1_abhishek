@@ -27,7 +27,7 @@ The vision node subscribes to the raw camera feed (`/image_raw`) and performs th
 | **Contour detection** | Finds external contours and selects the **largest** one that exceeds a minimum area threshold. |
 | **Centroid calculation** | Computes the centre of mass `(cx, cy)` of the largest contour. |
 | **Error publication** | Publishes the **horizontal pixel error** `(cx – image_width/2)` on the `/error` topic as a `Float64`. |
-| **Loss of target handling** | If no valid contour is found, the node publishes a **sentinel value** `9999.0`. |
+| **Loss of target handling** | If no valid contour is found, the node publishes a **sentinel value** `100000.0`. |
 
 The node can also display a real‑time debug window (optional) that draws the detected centroid, area, and the mask.
 
@@ -85,8 +85,8 @@ The controller node subscribes to **`/error`** (from the vision node) and **`/sc
 
 **A:** The system uses a **state‑driven recovery mechanism** based on a sentinel value.  
 
-- The **vision node** constantly checks for a valid contour. If none is found (or the target area is too small), it immediately publishes the special error value **`9999.0`**.  
-- The **controller node** interprets `9999.0` as *“target lost”* and switches from **tracking mode** to **search mode**. In search mode it sets linear speed to **zero** and commands a constant angular velocity (`search_rot_speed`).  
+- The **vision node** constantly checks for a valid contour. If none is found (or the target area is too small), it immediately publishes the special error value **`100000.0`**.  
+- The **controller node** interprets `100000.0` as *“target lost”* and switches from **tracking mode** to **search mode**. In search mode it sets linear speed to **zero** and commands a constant angular velocity (`search_rot_speed`).  
 - This forces the robot to **rotate in place**, systematically scanning its surroundings. As soon as the green sphere re‑appears in the camera frame, the vision node resumes publishing a real error, and the P‑controller seamlessly takes over again.
 
 ### 🔴 Q: How would you figure out that the robot is close to the obstacle and stop? Is there any other data you can use?
