@@ -12,7 +12,7 @@ class ControllerNode(Node):
 
         self.declare_parameter('Kp', 0.003)
         self.declare_parameter('error_tolerance', 40.0)
-        self.declare_parameter('stop_distance', 0.35)
+        self.declare_parameter('stop_distance', 0.5)
         self.declare_parameter('search_rot_speed', 0.3)
         self.declare_parameter('linear_speed', 0.12)
         self.declare_parameter('max_angular', 0.5)
@@ -21,7 +21,7 @@ class ControllerNode(Node):
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.scan_callback, 10)
         self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
 
-        self.current_error = 9999.0
+        self.current_error = 100000.0
         self.front_distance = float('inf')
         self.timer = self.create_timer(0.1, self.control_loop)
         self.get_logger().info('Controller Node started.')
